@@ -100,6 +100,9 @@
           data: trafficData,
           options: {
             scales: {
+              x: {
+                beginAtZero: true,
+              },
               y: {
                 beginAtZero: true,
               },
@@ -110,13 +113,19 @@
                 text: url,
               },
               zoom: {
+                pan: {
+                  enabled: true,
+                  mode: "x",
+                },
                 zoom: {
+                  enabled: true,
                   wheel: {
                     enabled: true,
                   },
                   pinch: {
                     enabled: true,
                   },
+                  speed: 0.1,
                   mode: "xy",
                 },
               },

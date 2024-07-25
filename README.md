@@ -2,6 +2,13 @@
 
 Traffic Logger is a simple way to monitor all the request traffic of your Express application. It logs the request time for each route used, giving you insights into the performance of your application.
 
+## Next Steps
+
+- [ ] Make everything more customizable
+- [ ] Implement tests
+- [ ] Organize the project
+- [ ] Option to download the information
+
 ## Installation
 
 To use Traffic Logger in your project, follow these steps:
@@ -31,6 +38,8 @@ To use Traffic Logger in your project, follow these steps:
 ## Usage
 
 Once you have set up Traffic Logger, it will start logging request times for each route. You can access the traffic logs by navigating to `/traffic` on your server. For example, if your server is running on `http://localhost:3000`, you can view the traffic logs at `http://localhost:3000/traffic`.
+
+![Simulation](simulation.png "Simulation using Artillery")
 
 ## Features
 
