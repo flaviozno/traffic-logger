@@ -74,6 +74,7 @@
         const canvas = document.createElement("canvas");
         canvas.width = 400;
         canvas.height = 200;
+        canvas.className = "rounded-lg p-2";
         canvasContainer.appendChild(canvas);
         document.getElementById("chartsContainer").appendChild(canvasContainer);
 
@@ -135,13 +136,15 @@
         return charts[url];
       };
 
-      const updateChart = (url, duration) => {
+      const updateChart = (url, duration, statusCode) => {
         if (!charts[url]) {
           charts[url] = createChart(url);
         }
 
         const trafficData = charts[url].data;
-        trafficData.labels.push(new Date().toLocaleTimeString());
+        trafficData.labels.push(
+          `${new Date().toLocaleTimeString()}, ${statusCode}`
+        );
         trafficData.datasets[0].data.push(duration);
         charts[url].update();
       };
@@ -159,7 +162,7 @@
       };
 
       socket.on("traffic", (logEntry) => {
-        updateChart(logEntry.url, logEntry.duration);
+        updateChart(logEntry.url, logEntry.duration, logEntry.statusCode);
       });
 
       const toggleDarkMode = () => {
@@ -201,7 +204,7 @@
           const cache = await response.json();
           Object.keys(cache).forEach((key) =>
             cache[key].forEach((request) => {
-              updateChart(request.url, request.duration);
+              updateChart(request.url, request.duration, request.statusCode);
             })
           );
         } catch (error) {
