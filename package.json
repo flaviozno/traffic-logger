@@ -1,0 +1,36 @@
+{
+  "name": "traffic-logger",
+  "version": "1.0.6",
+  "description": "A Node.js package with Express, Socket.io, and traffic logging middleware.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "url": "https://github.com/flaviozno/traffic-logger"
+  },
+  "scripts": {
+    "build": "tsup && npm run copy-html",
+    "copy-html": "copyfiles -u 1 src/page/index.html dist"
+  },
+  "keywords": [
+    "nodejs",
+    "middleware",
+    "traffic-logger"
+  ],
+  "author": "Flávio Filho",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.12",
+    "copy-html": "^1.0.3",
+    "copyfiles": "^2.4.1",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4",
+    "tsup": "^8.2.3"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}
