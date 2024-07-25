@@ -1,6 +1,6 @@
 {
   "name": "traffic-logger",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "A Node.js package with Express, Socket.io, and traffic logging middleware.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsup && npm run copy-html",
-    "copy-html": "copyfiles -u 1 src/page/index.html dist"
+    "copy-html": "copyfiles -u 1 src/page/index.html src/page/favicon.ico dist"
   },
   "keywords": [
     "nodejs",
