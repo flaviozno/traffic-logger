@@ -3,4 +3,5 @@ export interface CacheEntry {
   method: string;
   statusCode: number;
   duration: number;
+  body: string;
 }

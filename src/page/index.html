@@ -18,6 +18,12 @@
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
     <style>
+      :root {
+        --status-200: #4caf50;
+        --status-300: #2196f3;
+        --status-400: #ffeb3b;
+        --status-500: #f44336;
+      }
       .dark-mode {
         background-color: #1a202c;
         color: #a0aec0;
@@ -27,7 +33,12 @@
         background-color: #2d3748;
         transition: background-color 0.5s;
       }
+      .dark-mode .logs {
+        background-color: #2d3748;
+        transition: background-color 0.5s;
+      }
       .dark-mode h1,
+      .dark-mode h2,
       .dark-mode p {
         color: #a0aec0;
       }
@@ -69,12 +80,12 @@
 
       const createChart = (url) => {
         const canvasContainer = document.createElement("div");
-        canvasContainer.className = "w-full md:w-1/2 lg:w-1/3 p-2";
+        canvasContainer.className = "w-full md:w-1/2 lg:w-1/3";
 
         const canvas = document.createElement("canvas");
         canvas.width = 400;
         canvas.height = 200;
-        canvas.className = "rounded-lg p-2";
+        canvas.className = "rounded-lg";
         canvasContainer.appendChild(canvas);
         document.getElementById("chartsContainer").appendChild(canvasContainer);
 
@@ -136,7 +147,7 @@
         return charts[url];
       };
 
-      const updateChart = (url, duration, statusCode) => {
+      const updateChart = (url, duration, statusCode, body) => {
         if (!charts[url]) {
           charts[url] = createChart(url);
         }
@@ -147,6 +158,87 @@
         );
         trafficData.datasets[0].data.push(duration);
         charts[url].update();
+
+        displayLogBody(url, body, statusCode);
+      };
+
+      const applyStatusColor = (statusCode) => {
+        const rootStyles = getComputedStyle(document.documentElement);
+
+        let color;
+        switch (statusCode) {
+          case 200:
+            color = rootStyles.getPropertyValue("--status-200");
+            break;
+          case 300:
+            color = rootStyles.getPropertyValue("--status-300");
+            break;
+          case 400:
+            color = rootStyles.getPropertyValue("--status-400");
+            break;
+          case 500:
+            color = rootStyles.getPropertyValue("--status-500");
+            break;
+          default:
+            color = "#000";
+        }
+
+        return color.trim();
+      };
+
+      const displayLogBody = (url, body, statusCode) => {
+        let logContainer = document.getElementById(`log-${url}`);
+        if (!logContainer) {
+          logContainer = document.createElement("div");
+          logContainer.id = `log-${url}`;
+          logContainer.className =
+            "w-full md:w-1/2 lg:w-1/3 p-2 rounded-lg logs";
+          const logTitle = document.createElement("h2");
+          logTitle.className =
+            "text-lg font-bold text-gray-800 dark:text-gray-200 mb-2";
+          logTitle.textContent = `Log for ${url}`;
+          logContainer.appendChild(logTitle);
+
+          const logBodyContainer = document.createElement("div");
+          logBodyContainer.className = "overflow-hidden";
+          const logBody = document.createElement("div");
+          logBody.id = `log-body-${url}`;
+          logBody.className =
+            "text-sm h-full text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 p-2 rounded-md overflow-auto max-h-40";
+
+          logBodyContainer.appendChild(logBody);
+          logContainer.appendChild(logBodyContainer);
+
+          document.getElementById("chartsContainer").appendChild(logContainer);
+        }
+
+        const logBody = document.getElementById(`log-body-${url}`);
+        let logEntry = document.createElement("p");
+        logEntry.style.color = applyStatusColor(statusCode);
+
+        const copyIcon = document.createElement("i");
+        copyIcon.id = "copyIcon";
+        copyIcon.className = document.body.classList.contains("dark-mode")
+          ? "fa-solid fa-copy"
+          : "fa-regular fa-copy";
+        copyIcon.style.cursor = "pointer";
+        copyIcon.style.marginRight = "5px";
+        copyIcon.addEventListener("click", () => {
+          console.log(logEntry.textContent);
+          navigator.clipboard.writeText(body);
+        });
+
+        logEntry.appendChild(copyIcon);
+        logEntry.appendChild(
+          document.createTextNode(
+            `${statusCode}, ${new Date().toLocaleTimeString()}: ${body}`
+          )
+        );
+        logBody.appendChild(logEntry);
+
+        if (logBody.children.length > 20) {
+          logBody.removeChild(logBody.firstChild);
+        }
       };
 
       const updateChartColors = () => {
@@ -162,22 +254,37 @@
       };
 
       socket.on("traffic", (logEntry) => {
-        updateChart(logEntry.url, logEntry.duration, logEntry.statusCode);
+        updateChart(
+          logEntry.url,
+          logEntry.duration,
+          logEntry.statusCode,
+          logEntry.body
+        );
       });
 
       const toggleDarkMode = () => {
         document.body.classList.toggle("dark-mode");
-        const texts = document.querySelectorAll("body, h1, p");
+        const texts = document.querySelectorAll("body, h1, h2, p");
         texts.forEach((text) => text.classList.toggle("theme-transition"));
 
         const darkModeIcon = document.getElementById("darkModeIcon");
+        const copyIcon = document.querySelectorAll("#copyIcon");
         if (document.body.classList.contains("dark-mode")) {
           darkModeIcon.classList.remove("fa-regular");
           darkModeIcon.classList.add("fa-solid");
+          copyIcon.forEach((icon) => {
+            icon.classList.remove("fa-regular");
+            icon.classList.add("fa-solid");
+          });
           localStorage.setItem("theme", "dark");
         } else {
           darkModeIcon.classList.remove("fa-solid");
           darkModeIcon.classList.add("fa-regular");
+
+          copyIcon.forEach((icon) => {
+            icon.classList.remove("fa-solid");
+            icon.classList.add("fa-regular");
+          });
           localStorage.setItem("theme", "light");
         }
         updateChartColors();
@@ -191,6 +298,13 @@
         const storedTheme = localStorage.getItem("theme");
         if (storedTheme === "dark") {
           document.body.classList.add("dark-mode");
+          const copyIcon = document.querySelectorAll("#copyIcon");
+
+          copyIcon.forEach((icon) => {
+            icon.classList.remove("fa-regular");
+            icon.classList.add("fa-solid");
+          });
+
           const darkModeIcon = document.getElementById("darkModeIcon");
           darkModeIcon.classList.remove("fa-regular");
           darkModeIcon.classList.add("fa-solid");
@@ -204,7 +318,12 @@
           const cache = await response.json();
           Object.keys(cache).forEach((key) =>
             cache[key].forEach((request) => {
-              updateChart(request.url, request.duration, request.statusCode);
+              updateChart(
+                request.url,
+                request.duration,
+                request.statusCode,
+                request.body
+              );
             })
           );
         } catch (error) {
